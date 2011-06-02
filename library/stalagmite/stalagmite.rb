@@ -3,7 +3,7 @@ class Stalagmite
   include Trig
   
   def initialize(settings_tracker, opts={})
-    @settings_tracker = settings_tracker
+    @st = settings_tracker
     @x = opts[:x] || 0
     @y = opts[:y] || 0
   end
@@ -29,7 +29,7 @@ class Stalagmite
     sa = 100
     sw = 2
 
-    dw = 20
+    dw = @st['size']
     dh = 20
 
     fill fr, fg, fb, fa

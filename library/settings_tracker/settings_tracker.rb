@@ -17,6 +17,10 @@ class SettingsTracker
     @settings[setting.name] = setting
   end
   
+  def slider(name, default, range, group=nil)
+    add_setting(:name => name, :default => default, :value => default, :max => range.end, :min => range.begin, :ui_type => 'slider', :group => group)
+  end
+  
   def [](setting_name)
     @settings[setting_name].value
   end

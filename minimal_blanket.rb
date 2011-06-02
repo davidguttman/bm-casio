@@ -13,8 +13,8 @@ class MinimalBlanket < Processing::App
     background 0
     @osc = setup_osc
     @sound = setup_sound
-    @st = SettingsTracker.new
-    @stalagmites = [Stalagmite.new(@st)]
+    @trackers = [create_settings_tracker]
+    @stalagmites = @trackers.map {|tracker| Stalagmite.new(tracker) }
   end
   
   def draw
@@ -23,6 +23,12 @@ class MinimalBlanket < Processing::App
       stalagmite.update
       stalagmite.draw
     end
+  end
+  
+  def create_settings_tracker
+    st = SettingsTracker.new
+    st.slider 'size', 10, 1..20, 'shape'
+    return st
   end
   
   def setup_sound
@@ -39,6 +45,14 @@ class MinimalBlanket < Processing::App
   
   def osc(message)
     address, args = message.address, message.to_a
+    case address
+    when /^\/set\/.+/
+      t_index = address.split("/")[2].to_i
+      name, value = args[0], args[1]
+      @trackers[t_index][name] = value
+    else
+      puts "OSC - No matching address: #{address}"
+    end
   end
   
 end
