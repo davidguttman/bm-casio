@@ -7,13 +7,19 @@ class MinimalBlanket < Processing::App
   include Trig
 
   def setup
-    @osc = OSCHelper.new do |message|
-      osc(message)
-    end
+    render_mode JAVA2D
+    @osc = setup_osc
   end
   
   def draw
 
+  end
+  
+  def setup_osc
+    osc_helper = OSCHelper.new do |message|
+      osc(message)
+    end
+    return osc_helper
   end
   
   def osc(message)
@@ -23,5 +29,6 @@ class MinimalBlanket < Processing::App
 end
 
 
+fullscreen = true if ARGV[0] == "full"
 
-MinimalBlanket.new :title => "Minimal Blanket"
+MinimalBlanket.new :title => "Minimal Blanket", :width => 1280, :height => 768, :full_screen => fullscreen
