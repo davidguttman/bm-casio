@@ -2,7 +2,8 @@ class Stalagmite
   include Processing::Proxy
   include Trig
   
-  def initialize(opts={})
+  def initialize(settings_tracker, opts={})
+    @settings_tracker = settings_tracker
     @x = opts[:x] || 0
     @y = opts[:y] || 0
   end

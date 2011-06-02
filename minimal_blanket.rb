@@ -2,7 +2,7 @@
 
 class MinimalBlanket < Processing::App
 
-  load_libraries :trig, :osc_helper, :minim, :minim_helper, :stalagmite
+  load_libraries :trig, :osc_helper, :minim, :minim_helper, :stalagmite, :settings_tracker
   import 'ddf.minim'
   import 'ddf.minim.analysis'
 
@@ -13,7 +13,8 @@ class MinimalBlanket < Processing::App
     background 0
     @osc = setup_osc
     @sound = setup_sound
-    @stalagmites = [Stalagmite.new]
+    @st = SettingsTracker.new
+    @stalagmites = [Stalagmite.new(@st)]
   end
   
   def draw
