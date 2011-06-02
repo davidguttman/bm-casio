@@ -16,9 +16,7 @@ class MinimalBlanket < Processing::App
   end
   
   def draw
-    if frame_count % 60 == 0
-      @osc.send('/hello', "sup")
-    end
+
   end
   
 end
@@ -48,7 +46,7 @@ class OSCHelper
   end
   
   def set_patterns
-    @server.add_method '/hello' do |message|
+    @server.add_method /.*/ do |message|
       p message
     end
   end
