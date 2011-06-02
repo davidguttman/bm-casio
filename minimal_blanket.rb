@@ -2,7 +2,7 @@
 
 class MinimalBlanket < Processing::App
 
-  load_libraries :trig, :osc_helper, :minim, :minim_helper
+  load_libraries :trig, :osc_helper, :minim, :minim_helper, :stalagmite
   import 'ddf.minim'
   import 'ddf.minim.analysis'
 
@@ -10,14 +10,23 @@ class MinimalBlanket < Processing::App
 
   def setup
     render_mode JAVA2D
+    background 0
     @osc = setup_osc
-    @minim = Minim.new(self)
-    @sound = MinimHelper.new(@minim, FFT)
+    @sound = setup_sound
+    @stalagmites = [Stalagmite.new]
   end
   
   def draw
     @sound.update
-    p @sound.scaled_amps
+    @stalagmites.each do |stalagmite|
+      stalagmite.update
+      stalagmite.draw
+    end
+  end
+  
+  def setup_sound
+    minim = Minim.new(self)
+    sound = MinimHelper.new(minim, FFT)
   end
   
   def setup_osc
