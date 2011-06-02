@@ -2,17 +2,22 @@
 
 class MinimalBlanket < Processing::App
 
-  load_libraries :trig, :osc_helper
+  load_libraries :trig, :osc_helper, :minim, :minim_helper
+  import 'ddf.minim'
+  import 'ddf.minim.analysis'
 
   include Trig
 
   def setup
     render_mode JAVA2D
     @osc = setup_osc
+    @minim = Minim.new(self)
+    @sound = MinimHelper.new(@minim, FFT)
   end
   
   def draw
-
+    @sound.update
+    p @sound.scaled_amps
   end
   
   def setup_osc
