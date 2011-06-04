@@ -8,13 +8,18 @@ class Stalagmite
     @y = opts[:y] || 0
   end
   
-  def update
+  def update(sound)
+    @amps = sound.smooth_amps(@st['fft_smooth'])
+
     @vel = 1
     @dir = TWO_PI/360.0
     
     x, y = cartesian(@vel, @dir)
     @x += x
     @y += y
+    
+    @x = @x % width
+    @y = @y % height
   end
   
   def draw
@@ -27,15 +32,15 @@ class Stalagmite
     sg = 200
     sb = 200
     sa = 100
-    sw = 2
+    sw = @st['stroke_weight']
 
-    dw = @st['size']
-    dh = 20
+    dr = @st['size'] * @amps[3]
 
     fill fr, fg, fb, fa
     stroke sr, sg, sb, sa
-
-    ellipse @x, @y, dw, dh
+    stroke_weight sw
+    
+    ellipse @x, @y, dr, dr
   end
   
   

@@ -10,24 +10,27 @@ class MinimalBlanket < Processing::App
 
   def setup
     render_mode JAVA2D
+    smooth
     background 0
     @osc = setup_osc
     @sound = setup_sound
     @trackers = [create_settings_tracker]
-    @stalagmites = @trackers.map {|tracker| Stalagmite.new(tracker) }
+    @stalagmites = @trackers.map {|tracker| Stalagmite.new(tracker, :y => height/2) }
   end
   
   def draw
     @sound.update
     @stalagmites.each do |stalagmite|
-      stalagmite.update
+      stalagmite.update(@sound)
       stalagmite.draw
     end
   end
   
   def create_settings_tracker
     st = SettingsTracker.new
-    st.slider 'size', 10, 1..20, 'shape'
+    st.slider 'size', 400, 1..20, 'shape'
+    st.slider 'fft_smooth', 0.50, 0..1.0, 'sound'
+    st.slider 'stroke_weight', 5, 0..10, 'shape'
     return st
   end
   
@@ -43,12 +46,21 @@ class MinimalBlanket < Processing::App
     return osc_helper
   end
   
+  def tracker_state
+    @trackers.map {|tracker| tracker.to_h}
+  end
+  
   def osc(message)
+    puts "Received message: #{message}"
     address, args = message.address, message.to_a
     case address
+    when /^\/status/
+      resp_address = args.first
+      @osc.send(resp_address, tracker_state.to_json)
     when /^\/set\/.+/
       t_index = address.split("/")[2].to_i
       name, value = args[0], args[1]
+      p "OSC - name, value: #{name}, #{value}"
       @trackers[t_index][name] = value
     else
       puts "OSC - No matching address: #{address}"
@@ -60,4 +72,4 @@ end
 
 fullscreen = true if ARGV[0] == "full"
 
-MinimalBlanket.new :title => "Minimal Blanket", :width => 1280, :height => 768, :full_screen => fullscreen
+MinimalBlanket.new :title => "Minimal Blanket", :width => 960, :height => 768, :full_screen => fullscreen
