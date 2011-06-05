@@ -53,7 +53,7 @@ class MinimHelper
     @raw_amps.each do |amp| 
       scaled_amp = (amp - @min_amp) / (@max_amp - @min_amp)
   
-      scaled_amp = 0 if scaled_amp < 1e-44 || scaled_amp.nan?
+      scaled_amp = 0 if scaled_amp < 1e-5 || scaled_amp.nan?
       scaled_amps << scaled_amp
     end
     scaled_amps

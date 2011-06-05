@@ -27,6 +27,7 @@ class OSCHelper
   
   def send(address, message)
     m = Message.new(address, message)
+    puts "sending message #{message}"
     @client.send(m)
   end
   
