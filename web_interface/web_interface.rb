@@ -27,6 +27,10 @@ setup_osc
 
 set :public, File.dirname(__FILE__) + '/public'
 
+get '/' do
+  File.read(File.dirname(__FILE__) + '/public/index.html')
+end
+
 get '/status' do
   @@tracker_settings = nil
   m = OSC::Message.new('/status', 9091)
