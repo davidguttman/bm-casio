@@ -31,7 +31,7 @@ class SettingsTracker
   
   def to_h
     settings = {}
-    @settings.each do |setting|
+    @settings.each do |setting_name, setting|
       settings[setting.name] = setting.to_h
     end
     settings
@@ -50,7 +50,7 @@ class TrackerSetting < OpenStruct
   end
   
   def to_h
-    {
+    hash = {
       "name" => name,
       "value" => value,
       "min" => min,
@@ -60,6 +60,8 @@ class TrackerSetting < OpenStruct
       "norm_value" => norm_value,
       "ui_type" => ui_type
     }
+    p hash
+    return hash
   end
   
   def to_json
