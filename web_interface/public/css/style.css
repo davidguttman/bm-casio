@@ -1,0 +1,33 @@
+h1, h2, h3, h4 {
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 260%;
+}
+
+h2 {
+  font-size: 200%;
+}
+
+h3 {
+  font-size: 160%;
+}
+
+h4 {
+  font-size: 140%;
+}
+
+#main {
+  text-align: center;
+}
+
+#trackers {
+  margin: 0 auto;
+  width: 80%;
+  text-align: left;
+}
+
+.slider {
+  margin: 5px;
+}
