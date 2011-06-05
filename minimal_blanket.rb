@@ -28,9 +28,9 @@ class MinimalBlanket < Processing::App
   
   def create_settings_tracker
     st = SettingsTracker.new
-    st.slider 'size', 400, 1..20, 'shape'
+    st.slider 'size', 400, 1..1000, 'shape'
     st.slider 'fft_smooth', 0.50, 0..1.0, 'sound'
-    st.slider 'stroke_weight', 5, 0..10, 'shape'
+    st.slider 'stroke_weight', 5, 0..20, 'shape'
     return st
   end
   
@@ -58,7 +58,8 @@ class MinimalBlanket < Processing::App
   end
   
   def osc_set(args)
-    t_index, name, value = args[0], args[1], args[2]
+    t_index, name, value = args[0].to_i, args[1], args[2]
+    p "osc set: #{t_index.class}, #{name.class}, #{value.class}"
     @trackers[t_index][name] = value
   end
   
