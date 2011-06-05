@@ -3,17 +3,29 @@ require 'sinatra'
 require 'osc-ruby'
 require 'json'
 
-@@osc_server = OSC::Server.new(9091)
-@@osc_client = OSC::Client.new('localhost', 9090)
-
-Thread.new do
-  @@osc_server.run
+def set_tracker(tracker_id, setting_name, value)
+  address = "/set"
+  m = OSC::Message.new(address, tracker_id, setting_name, value.to_f)
+  @@osc_client.send(m)
 end
 
-@@osc_server.add_method '/status' do |message|
-  # @@tracker_settings = JSON.parse(message.to_a.first)
-  @@tracker_settings = message.to_a.first
+def setup_osc
+  @@osc_server = OSC::Server.new(9091)
+  @@osc_client = OSC::Client.new('localhost', 9090)
+
+  Thread.new do
+    @@osc_server.run
+  end
+
+  @@osc_server.add_method '/status' do |message|
+    # @@tracker_settings = JSON.parse(message.to_a.first)
+    @@tracker_settings = message.to_a.first
+  end
 end
+
+setup_osc
+
+set :public, File.dirname(__FILE__) + '/public'
 
 get '/status' do
   @@tracker_settings = nil
@@ -31,10 +43,4 @@ get '/set/:tracker_id/:setting_name' do
   p params[:tracker_id], params[:setting_name], params[:value]
   set_tracker(params[:tracker_id], params[:setting_name], params[:value])
   puts "params[:tracker_id], params[:setting_name], params[:value]"
-end
-
-def set_tracker(tracker_id, setting_name, value)
-  address = "/set"
-  m = OSC::Message.new(address, tracker_id, setting_name, value.to_f)
-  @@osc_client.send(m)
 end
