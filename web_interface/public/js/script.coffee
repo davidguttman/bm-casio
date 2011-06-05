@@ -20,13 +20,14 @@ class Blanket
       _.each tracker, (properties, name) =>
         console.log properties
         tracker_target.append("<h4>#{name}:</h4>")
-        slider = $("<div id='slider_#{i}_#{name}'></div>").slider
+        slider = $("<div id='slider_#{i}_#{name}' class='slider'></div>").slider
           min: properties.min
           max: properties.max
           value: properties.value
           step: (properties.max - properties.min)/1000 
           change: (event, ui) ->
             console.log ui
+            $.get("/set/#{i}/#{name}?value=#{ui.value}")
         tracker_target.append(slider)
 
 $(document).ready ->

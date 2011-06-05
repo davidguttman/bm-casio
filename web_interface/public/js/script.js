@@ -24,13 +24,14 @@
           var slider;
           console.log(properties);
           tracker_target.append("<h4>" + name + ":</h4>");
-          slider = $("<div id='slider_" + i + "_" + name + "'></div>").slider({
+          slider = $("<div id='slider_" + i + "_" + name + "' class='slider'></div>").slider({
             min: properties.min,
             max: properties.max,
             value: properties.value,
             step: (properties.max - properties.min) / 1000,
             change: function(event, ui) {
-              return console.log(ui);
+              console.log(ui);
+              return $.get("/set/" + i + "/" + name + "?value=" + ui.value);
             }
           });
           return tracker_target.append(slider);
