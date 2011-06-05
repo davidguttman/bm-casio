@@ -47,21 +47,29 @@ class MinimalBlanket < Processing::App
   end
   
   def tracker_state
-    @trackers.map {|tracker| tracker.to_h}
+    @trackers.map {|tracker| tracker.to_h}.to_json
+  end
+  
+  def osc_status(args)
+    puts "args #{args}"
+    resp_port = args.first
+    ts = tracker_state
+    @osc.send('/status', ts)
+  end
+  
+  def osc_set(args)
+    t_index, name, value = args[0], args[1], args[2]
+    @trackers[t_index][name] = value
   end
   
   def osc(message)
     puts "Received message: #{message}"
     address, args = message.address, message.to_a
-    case address
-    when /^\/status/
-      resp_address = args.first
-      @osc.send(resp_address, tracker_state.to_json)
-    when /^\/set\/.+/
-      t_index = address.split("/")[2].to_i
-      name, value = args[0], args[1]
-      p "OSC - name, value: #{name}, #{value}"
-      @trackers[t_index][name] = value
+    method_name = ("osc_" + address.gsub("/", "")).to_sym
+    
+    if self.respond_to? method_name
+      puts "OSC - Calling #{method_name}: #{args.join(", ")}"
+      self.send method_name, args
     else
       puts "OSC - No matching address: #{address}"
     end
