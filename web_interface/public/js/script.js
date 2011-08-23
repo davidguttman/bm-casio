@@ -13,6 +13,25 @@
         return this.create_ui();
       }, this));
     };
+    Blanket.prototype.slider = function(opts) {
+      var label, slider, slider_container, value;
+      slider_container = $("<div class='slider_container'></slider>");
+      label = $("<h4>" + opts.name + ":</h4>");
+      value = $("<input type='text' value='" + opts.value + "'/>");
+      slider = $("<div id='slider_" + opts.tracker_i + "_" + name + "' class='slider'></div>").slider({
+        min: opts.min,
+        max: opts.max,
+        value: opts.value,
+        step: (opts.max - opts.min) / 1000,
+        change: function(event, ui) {
+          console.log(ui);
+          return $.get("/set/" + opts.tracker_i + "/" + opts.name + "?value=" + ui.value, function() {
+            return value.val(ui.value);
+          });
+        }
+      });
+      return slider_container.append(label, value, slider);
+    };
     Blanket.prototype.create_ui = function() {
       this.trackers_target.html();
       return _.each(this.trackers, __bind(function(tracker, i) {
@@ -21,20 +40,9 @@
         this.trackers_target.append(tracker_target);
         console.log("Tracker " + i + ": ");
         return _.each(tracker, __bind(function(properties, name) {
-          var slider;
           console.log(properties);
-          tracker_target.append("<h4>" + name + ":</h4>");
-          slider = $("<div id='slider_" + i + "_" + name + "' class='slider'></div>").slider({
-            min: properties.min,
-            max: properties.max,
-            value: properties.value,
-            step: (properties.max - properties.min) / 1000,
-            change: function(event, ui) {
-              console.log(ui);
-              return $.get("/set/" + i + "/" + name + "?value=" + ui.value);
-            }
-          });
-          return tracker_target.append(slider);
+          properties.tracker_i = i;
+          return tracker_target.append(this.slider(properties));
         }, this));
       }, this));
     };

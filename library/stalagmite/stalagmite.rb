@@ -23,21 +23,22 @@ class Stalagmite
   end
   
   def draw
-    fr = 255
-    fg = 255
-    fb = 255
-    fa = 255
+    fr = @st['fill_red'] + (@amps[2] * @st["sound_fill_red"])
+    fg = @st['fill_green'] + (@amps[3] * @st["sound_fill_green"])
+    fb = @st['fill_blue'] + (@amps[4] * @st["sound_fill_blue"])
+    fa = @st['fill_opacity']
 
-    sr = 200
-    sg = 200
-    sb = 200
-    sa = 100
+    sr = fr + @st['stroke_offset']
+    sg = fg + @st['stroke_offset']
+    sb = fb + @st['stroke_offset']
+    sa = @st['stroke_opacity']
+    
     sw = @st['stroke_weight']
 
-    dr = @st['size'] * @amps[3]
+    dr = (@st['size'] * @amps[3]).to_i
 
-    fill fr, fg, fb, fa
-    stroke sr, sg, sb, sa
+    fill fr, fg, fb, fa.to_i
+    stroke sr, sg, sb, sa.to_i
     stroke_weight sw
     
     ellipse @x, @y, dr, dr

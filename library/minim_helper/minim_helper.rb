@@ -9,11 +9,13 @@ class MinimHelper
     @minim = minim
     @input = @minim.get_line_in
     @fft = fft.new(@input.left.size, 44100)
-    @raw_amps = [0.01]*FREQS.size
-    @fft_amps = [0.01]*FREQS.size
+    @fft.logAverages(22, 22)
+    
+    @raw_amps = [0.01]*@fft.avgSize
+    @fft_amps = [0.01]*@fft.avgSize
     @prev_amps = []
-    @max_amps = [MAX_AMP_FLOOR]*FREQS.size
-    @scaled_amps = [0.01]*FREQS.size
+    @max_amps = [MAX_AMP_FLOOR]*@fft.avgSize
+    @scaled_amps = [0.01]*@fft.avgSize
     @smooth_amps = {}
   end
   
@@ -25,8 +27,8 @@ class MinimHelper
     
     @fft.forward @input.left
     
-    FREQS.each_with_index do |freq, i|
-      amp = @fft.get_freq(freq)
+    (1..@fft.avgSize).each do |i|
+      amp = @fft.get_band(i)
       @raw_amps[i] = amp
 
       @max_amp = amp if !@max_amp || amp > @max_amp
