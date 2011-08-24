@@ -21,22 +21,19 @@ class MinimalBlanket < Processing::App
   def draw
     clear 255
     @sound.update
-    samps = @sound.smooth_amps(0.8)
+    samps = @sound.smooth_amps(0.9)
     
     n = samps.size.to_f
     w = (width/n)/2.floor
     
-    samps.each_with_index do |samp, i|
-      fill 255
-      puts "\nsamp: #{samp}\n"
-      rect i*w, height, w, -samp*height
-      rect width-(i*w), height, -w, -samp*height
+    
+    
+    samps[1..-1].each_with_index do |samp, i|
+      fill (samp * 255 + 100)
+      rect (width/2)+(i*w), height, w, -samp*height
+      rect (width/2)-(i*w), height, -w, -samp*height
     end
     
-    # @stalagmites.each do |stalagmite|
-    #   stalagmite.update(@sound)
-    #   stalagmite.draw
-    # end
   end
   
   def clear(opacity=255)
