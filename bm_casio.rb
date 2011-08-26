@@ -11,6 +11,8 @@ class BMCasio < Processing::App
   def setup
     render_mode JAVA2D
     color_mode HSB
+    rect_mode CENTER
+
     smooth
     background 0
     @osc = setup_osc
@@ -22,17 +24,14 @@ class BMCasio < Processing::App
   def draw
     clear 255
     @sound.update
-    samps = @sound.smooth_amps(0.95)
-    
+    samps = @sound.smooth_amps(0.96)
+
+    samps = samps[1..-1]
 
     avg_samps = avg_samples(samps, 4)    
-    @maxima = maxima_score(avg_samps, 0.9)
+    @maxima = maxima_score(avg_samps, 0.7)
     
-    @h = @maxima * 255
-    @s = 100
-    
-    
-    draw_samples(avg_samps)
+    draw_samples(samps)
   end
   
   def maxima_score(samps, avg)
@@ -57,6 +56,9 @@ class BMCasio < Processing::App
     maxima_rel = (maxima_rel * (1-avg)) + (@last_maxima * avg)
     @last_maxima = maxima_rel
     
+    @maxima_min = 0.9999*@maxima_min + 0.0001*@maxima_max
+    @maxima_max = 0.9999*@maxima_max + 0.0001*@maxima_min
+    
     return maxima_rel
   end
   
@@ -65,15 +67,59 @@ class BMCasio < Processing::App
     n = samples.size.to_f
     w = (width/n)/2.floor
 
-    samples.each_with_index do |samp, i|
-      @b = (samp * 255 + 100)      
-      fill @h, @s, @b
-      rect (width/2)+(i*w), height/2, w, -samp*height
-      rect (width/2)-(i*w), height/2, -w, -samp*height
+    # hue_shift = (frame_count/60.0)
+    hue_shift = 0
 
-      rect (width/2)+(i*w), height/2, w, samp*height
-      rect (width/2)-(i*w), height/2, -w, samp*height
+    begin_shape
+    curve_vertex width/2, height/2
+    curve_vertex width/2, height/2
+
+    unwind = []
+
+    samples.each_with_index do |samp, i|
+      samp = log(samp*100+1)/log(101)
+      # samp = log(samp*100+1)/log(101) 
+
+      h = ((@maxima * 255) + hue_shift) % 255
+      s = 100
+      b = (samp * 255 + 100)
+      
+      fill h, s, b, 255
+      # no_fill
+      # stroke_weight 2
+      # stroke h, s, b
+      
+      x1 = (width/2)+(i*w)
+      x2 = (width/2)-(i*w)
+      x3 = (width/2)+(i*w)
+      x4 = (width/2)-(i*w)
+      
+      lh = samp*height
+      y = height/2 + lh/2
+      
+      curve_vertex x1, y
+      unwind << [x1, y-lh]
+      # rect x1, y+lh/2, 2, 2
+      
+      # rect x1, y, w, -lh
+      # rect x2, y, -w, -lh
+      # 
+      # tip_length = 8
+      # fill h, 0, 0
+      # rect x1, y-(tip_length/2), w, -(lh-tip_length)
+      # rect x2, y-(tip_length/2), -w, -(lh-tip_length)
+           
+      # rect x3, height/2, w, samp*height/2
+      # rect x4, height/2, -w, samp*height/2
     end
+    
+    unwind.reverse.each do |x, y|
+      curve_vertex x, y
+    end
+    
+    curve_vertex width/2, height/2
+    curve_vertex width/2, height/2
+    end_shape
   end
   
   def count_local_maxima(samples)
@@ -111,8 +157,8 @@ class BMCasio < Processing::App
   
   def clear(opacity=255)
     no_stroke
-    fill 0, opacity
-    rect 0, 0, width, height
+    fill 0, 0, 0, opacity
+    rect width/2, height/2, width, height
   end
   
   def create_settings_tracker

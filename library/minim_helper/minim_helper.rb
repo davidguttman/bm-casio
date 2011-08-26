@@ -1,6 +1,6 @@
 class MinimHelper  
   FREQS = [60, 170, 310, 600, 1000, 3000, 6000, 12000, 14000, 16000]
-  MAX_AMP_FLOOR = 0.80
+  MAX_AMP_FLOOR = 0.9
   
   attr_reader :raw_amps, :max_amp, :min_amp
   
@@ -9,7 +9,8 @@ class MinimHelper
     @minim = minim
     @input = @minim.get_line_in
     @fft = fft.new(@input.left.size, 44100)
-    @fft.logAverages(22, 22)
+    # @fft.logAverages(22, 22)
+    @fft.logAverages(22, 8)
     
     @raw_amps = [0.01]*@fft.avgSize
     @fft_amps = [0.01]*@fft.avgSize
@@ -34,8 +35,17 @@ class MinimHelper
       @max_amp = amp if !@max_amp || amp > @max_amp
       @min_amp = amp if !@min_amp || amp < @min_amp
 
-      @max_amp *= 0.9999
-      @min_amp *= 0.9999
+      
+
+      if @max_amp > MAX_AMP_FLOOR
+        @no_sound = false
+        @max_amp = 0.9999 * @max_amp + 0.0001 * @min_amp
+      else
+        @no_sound = true
+        @max_amp = MAX_AMP_FLOOR        
+      end
+      
+      @min_amp = 0.9999 * @min_amp + 0.0001 * @max_amp
     end
   end
   
@@ -55,7 +65,10 @@ class MinimHelper
     @raw_amps.each do |amp| 
       scaled_amp = (amp - @min_amp) / (@max_amp - @min_amp)
   
-      scaled_amp = 0 if scaled_amp < 1e-5 || scaled_amp.nan?
+      
+      if @no_sound or scaled_amp < 1e-3 or scaled_amp.nan?
+        scaled_amp = 0
+      end
       scaled_amps << scaled_amp
     end
     scaled_amps
