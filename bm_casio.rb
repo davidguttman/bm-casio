@@ -1,6 +1,6 @@
 # Minimal Blanket
 
-class MinimalBlanket < Processing::App
+class BMCasio < Processing::App
 
   load_libraries :trig, :osc_helper, :minim, :minim_helper, :stalagmite, :settings_tracker
   import 'ddf.minim'
@@ -10,30 +10,103 @@ class MinimalBlanket < Processing::App
 
   def setup
     render_mode JAVA2D
+    color_mode HSB
     smooth
     background 0
     @osc = setup_osc
     @sound = setup_sound
     @trackers = [create_settings_tracker]
-    @stalagmites = @trackers.map {|tracker| Stalagmite.new(tracker, :y => height/2) }
+    # @stalagmites = @trackers.map {|tracker| Stalagmite.new(tracker, :y => height/2) }
   end
   
   def draw
     clear 255
     @sound.update
-    samps = @sound.smooth_amps(0.9)
+    samps = @sound.smooth_amps(0.95)
     
-    n = samps.size.to_f
-    w = (width/n)/2.floor
+
+    avg_samps = avg_samples(samps, 4)    
+    @maxima = maxima_score(avg_samps, 0.9)
+    
+    @h = @maxima * 255
+    @s = 100
     
     
+    draw_samples(avg_samps)
+  end
+  
+  def maxima_score(samps, avg)
+    maxima = count_local_maxima(samps)
     
-    samps[1..-1].each_with_index do |samp, i|
-      fill (samp * 255 + 100)
-      rect (width/2)+(i*w), height, w, -samp*height
-      rect (width/2)-(i*w), height, -w, -samp*height
+    @maxima_max ||= maxima
+    @maxima_max = maxima if maxima > @maxima_max
+    
+    @maxima_min ||= maxima
+    @maxima_min = maxima if maxima < @maxima_min
+
+    maxima_diff = @maxima_max - @maxima_min
+    
+    if maxima_diff > 0
+      maxima_rel = (maxima.to_f - @maxima_min)/maxima_diff
+    else
+      maxima_rel = 0
     end
     
+    @last_maxima ||= maxima_rel
+    
+    maxima_rel = (maxima_rel * (1-avg)) + (@last_maxima * avg)
+    @last_maxima = maxima_rel
+    
+    return maxima_rel
+  end
+  
+  def draw_samples(samples)
+
+    n = samples.size.to_f
+    w = (width/n)/2.floor
+
+    samples.each_with_index do |samp, i|
+      @b = (samp * 255 + 100)      
+      fill @h, @s, @b
+      rect (width/2)+(i*w), height/2, w, -samp*height
+      rect (width/2)-(i*w), height/2, -w, -samp*height
+
+      rect (width/2)+(i*w), height/2, w, samp*height
+      rect (width/2)-(i*w), height/2, -w, samp*height
+    end
+  end
+  
+  def count_local_maxima(samples)
+    n_maxima = 0
+    samples.each_with_index do |samp, i|
+      next if i == 0 or i == samples.size-1
+      if samp > samples[i-1] and samp > samples[i+1]
+        n_maxima += 1
+      end
+    end
+    return n_maxima
+  end
+  
+  def avg_samples(samps, n_avg)
+    avg_samps = []
+    
+    samps.each_with_index do |samp, i|
+      next if i < n_avg/2 or i > ((samps.size-1)-(n_avg/2))
+
+      to_avg = []
+      
+      (1..(n_avg/2)).each do |n|
+        to_avg << samps[i-n]
+        to_avg << samps[i+n]
+      end
+      
+      to_avg << samp
+      
+      sum = to_avg.inject(0) {|memo, val| memo + val}
+
+      avg_samps << sum/to_avg.size
+    end
+    avg_samps
   end
   
   def clear(opacity=255)
@@ -130,4 +203,4 @@ end
 
 fullscreen = true if ARGV[0] == "full"
 
-MinimalBlanket.new :title => "Minimal Blanket", :width => 960, :height => 768, :full_screen => fullscreen
+BMCasio.new :title => "BM Casio", :width => 960, :height => 768, :full_screen => fullscreen
