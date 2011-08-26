@@ -10,7 +10,7 @@ class BMCasio < Processing::App
 
   def setup
     render_mode JAVA2D
-    color_mode HSB
+    color_mode HSB, 255, 100, 100, 100
     rect_mode CENTER
 
     smooth
@@ -24,14 +24,22 @@ class BMCasio < Processing::App
   def draw
     clear 255
     @sound.update
-    samps = @sound.smooth_amps(0.96)
+    samps = @sound.smooth_amps(0.90)
 
     samps = samps[1..-1]
 
     avg_samps = avg_samples(samps, 4)    
-    @maxima = maxima_score(avg_samps, 0.7)
+    @maxima = maxima_score(avg_samps, 0.50)
     
-    draw_samples(samps)
+    draw_samples(samps, 1.8)
+    # draw_samples(samps, 1.6)
+    draw_samples(samps, 1.4)
+    # draw_samples(samps, 1.2)
+    draw_samples(samps, 1.0)
+    # draw_samples(samps, 0.8)
+    draw_samples(samps, 0.6)
+    # draw_samples(samps, 0.4)
+    draw_samples(samps, 0.2)
   end
   
   def maxima_score(samps, avg)
@@ -62,7 +70,7 @@ class BMCasio < Processing::App
     return maxima_rel
   end
   
-  def draw_samples(samples)
+  def draw_samples(samples, scale=1.0)
 
     n = samples.size.to_f
     w = (width/n)/2.floor
@@ -71,23 +79,25 @@ class BMCasio < Processing::App
     hue_shift = 0
 
     begin_shape
-    curve_vertex width/2, height/2
-    curve_vertex width/2, height/2
+    # curve_vertex width/2, height/2
+    # curve_vertex width/2, height/2
 
     unwind = []
 
     samples.each_with_index do |samp, i|
       samp = log(samp*100+1)/log(101)
-      # samp = log(samp*100+1)/log(101) 
+      # samp = log(samp*100+1)/log(101)
+      samp *= scale
 
       h = ((@maxima * 255) + hue_shift) % 255
-      s = 100
+      s = 80
       b = (samp * 255 + 100)
       
-      fill h, s, b, 255
+      fill h, s, b, 25
       # no_fill
-      # stroke_weight 2
-      # stroke h, s, b
+      
+      stroke_weight 2
+      stroke h, s, b, 100
       
       x1 = (width/2)+(i*w)
       x2 = (width/2)-(i*w)
@@ -97,28 +107,33 @@ class BMCasio < Processing::App
       lh = samp*height
       y = height/2 + lh/2
       
-      curve_vertex x1, y
+      # curve_vertex x1, y
       unwind << [x1, y-lh]
-      # rect x1, y+lh/2, 2, 2
-      
-      # rect x1, y, w, -lh
-      # rect x2, y, -w, -lh
-      # 
-      # tip_length = 8
-      # fill h, 0, 0
-      # rect x1, y-(tip_length/2), w, -(lh-tip_length)
-      # rect x2, y-(tip_length/2), -w, -(lh-tip_length)
-           
-      # rect x3, height/2, w, samp*height/2
-      # rect x4, height/2, -w, samp*height/2
+    end
+    
+    
+    ix, iy = unwind.first
+    curve_vertex ix, height - iy
+    
+    unwind.each do |x, y|
+      curve_vertex x, height - y
     end
     
     unwind.reverse.each do |x, y|
       curve_vertex x, y
     end
     
-    curve_vertex width/2, height/2
-    curve_vertex width/2, height/2
+    unwind.each do |x, y|
+      curve_vertex width - x, y
+    end
+    
+    unwind.reverse.each do |x, y|
+      curve_vertex width - x, height - y
+    end
+    
+    fx, fy = unwind.reverse.last
+    curve_vertex width - fx, height - fy
+    
     end_shape
   end
   
