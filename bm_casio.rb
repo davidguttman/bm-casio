@@ -29,17 +29,18 @@ class BMCasio < Processing::App
     samps = samps[1..-1]
 
     avg_samps = avg_samples(samps, 4)    
-    @maxima = maxima_score(avg_samps, 0.50)
+    @maxima = maxima_score(avg_samps, 0.90)
     
-    draw_samples(samps, 1.8)
-    # draw_samples(samps, 1.6)
-    draw_samples(samps, 1.4)
-    # draw_samples(samps, 1.2)
-    draw_samples(samps, 1.0)
-    # draw_samples(samps, 0.8)
-    draw_samples(samps, 0.6)
-    # draw_samples(samps, 0.4)
-    draw_samples(samps, 0.2)
+    
+    (1..5).each do |n|
+      scale = 0.8*n
+      scale = (scale + frame_count * 0.02) % 2.0
+      
+      opacity = 100 - scale*50.0
+      
+      draw_samples(samps, scale, opacity)
+    end
+    
   end
   
   def maxima_score(samps, avg)
@@ -70,13 +71,13 @@ class BMCasio < Processing::App
     return maxima_rel
   end
   
-  def draw_samples(samples, scale=1.0)
+  def draw_samples(samples, scale=1.0, opacity=100)
 
     n = samples.size.to_f
     w = (width/n)/2.floor
 
-    # hue_shift = (frame_count/60.0)
-    hue_shift = 0
+    hue_shift = (frame_count/60.0)
+    # hue_shift = 0
 
     begin_shape
     # curve_vertex width/2, height/2
@@ -93,11 +94,11 @@ class BMCasio < Processing::App
       s = 80
       b = (samp * 255 + 100)
       
-      fill h, s, b, 25
+      fill h, s, b, opacity/2
       # no_fill
       
       stroke_weight 2
-      stroke h, s, b, 100
+      stroke h, s, b, opacity
       
       x1 = (width/2)+(i*w)
       x2 = (width/2)-(i*w)
